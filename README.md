@@ -1,4 +1,4 @@
-# veri python text search demo
+# Veri Python Semantic Text Search Demo
 Text Search Demo Using Veri And Universal Sentence Encoders
 
 This repository intends to show how to prototype a semantic text search engine with Veri Feature Store.
@@ -64,6 +64,8 @@ python uploader.py
 ```
 
 This will take a couple of minutes. A pid file will be stored under `tmp` folder, you can kill the `veri` instance with this pid later.
+As a side note, there is a data retention period which is 1 day by default. If you don't use a data for a day it will be deleted.
+
 
 Now you are ready to Search:
 ```python
@@ -93,17 +95,16 @@ res[['title', 'url']].head()
 Search result is a pandas dataframe so you can use dataframe tools to manipulate it.
 Example result:
 ```python
-      score                                              label  ...                                              title                                            url
-0  1.712817                                      b'Film award'  ...  Roman Polanski Leads European Film Awards Nomi...  https://assets.msn.com/labs/mind/BBWvQFf.html
-1  1.616612                                       b'Teen film'  ...  20 Teen Movies on Netflix Your Kids Will Love ...  https://assets.msn.com/labs/mind/BBUy2xG.html
-2  1.567333                               b'Major film studio'  ...  Oscars: These Are the 42 Films Vying for Best ...  https://assets.msn.com/labs/mind/AAJDknJ.html
-3  1.542766  b"All 112 of Netflix's notable original movies...  ...  All 112 of Netflix's notable original movies, ...  https://assets.msn.com/labs/mind/AAJIknr.html
-4  1.358358                b"50 Best Movies You've Never Seen"  ...                   50 Best Movies You've Never Seen  https://assets.msn.com/labs/mind/AAHDxdZ.html
-5  1.224054            b'The best football movies of all time'  ...               The best football movies of all time  https://assets.msn.com/labs/mind/AAI7lm0.html
-6  1.145847                           b'Priceless (2016 film)'  ...           Talking husky says 'I love you' to owner  https://assets.msn.com/labs/mind/AAJNH1V.html
-7  1.093771                           b'Hollywood Film Awards'  ...  From Al Pacino to Renee Zellweger, Fate Highli...  https://assets.msn.com/labs/mind/AAJO7s4.html
-8  1.083639                  b'The most powerful LGBTQ movies'  ...                     The most powerful LGBTQ movies  https://assets.msn.com/labs/mind/AAIeIly.html
-9  1.079842  b'7 great movies you can watch on Netflix this...  ...  7 great movies you can watch on Netflix this w...  https://assets.msn.com/labs/mind/AAHB9uG.html
+      score                                    label                                            feature      id                                              title                                            url
+0  1.358358      b"50 Best Movies You've Never Seen"  [-0.010016842745244503, -0.05103179067373276, ...  N62924                   50 Best Movies You've Never Seen  https://assets.msn.com/labs/mind/AAHDxdZ.html
+1  0.699587  b'The best football movies of all time'  [0.026803573593497276, -0.048604659736156464, ...  N23005               The best football movies of all time  https://assets.msn.com/labs/mind/AAI7lm0.html
+2  0.685656        b'The 50 best films of the 2010s'  [-0.024614008143544197, 0.013537825085222721, ...   N6007                     The 50 best films of the 2010s  https://assets.msn.com/labs/mind/AAJAYsh.html
+3  0.669703                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...  N48032  Movie review: Stars reunite for rom-com 'Todos...  https://assets.msn.com/labs/mind/AAGs9hb.html
+4  0.669703                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...   N4855  This Boston Hotel Ranks As One of the Most Hau...  https://assets.msn.com/labs/mind/AAJhBGb.html
+5  0.669703                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...  N22599              The 20 Most Haunted Hotels in America  https://assets.msn.com/labs/mind/AAI6Iey.html
+6  0.669703                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...   N4912  New Movies and TV Shows You'll Be Able to Cozy...  https://assets.msn.com/labs/mind/AAJdRd0.html
+7  0.668541     b'50 Best Movie Sequels of All Time'  [-0.03256732225418091, -0.03161001205444336, 0...  N26488                  50 Best Movie Sequels of All Time  https://assets.msn.com/labs/mind/BBWBrdA.html
+8  0.659464                            b'Film award'  [-0.015458960086107254, 0.031246623024344444, ...  N20533  Roman Polanski Leads European Film Awards Nomi...  https://assets.msn.com/labs/mind/BBWvQFf.html
 ```
 
 Default search is using Cosine similarity as metric and using first 200 results to create groups using first 5 values to show first 10 results.
@@ -113,6 +114,50 @@ If you use longer queries with multiple sentences they will searched separately 
 Veri has an internal cache for each query and it will be faster for the similar queries.
 
 ```python
-res = data.search("Best movies", context=["I watch Netflix"])
+res = data.search("Best movies", context=["awards"])
 print(res)
 ```
+Search in the context of "awards" will prioritise best movies based on Film awards.
+See the 9th result in the previous search is now the 2nd resullt.
+```python
+      score                                    label                                            feature      id                                              title                                            url
+0  1.358358      b"50 Best Movies You've Never Seen"  [-0.010016842745244503, -0.05103179067373276, ...  N62924                   50 Best Movies You've Never Seen  https://assets.msn.com/labs/mind/AAHDxdZ.html
+1  0.707995                            b'Film award'  [-0.015458960086107254, 0.031246623024344444, ...  N20533  Roman Polanski Leads European Film Awards Nomi...  https://assets.msn.com/labs/mind/BBWvQFf.html
+2  0.699587  b'The best football movies of all time'  [0.026803573593497276, -0.048604659736156464, ...  N23005               The best football movies of all time  https://assets.msn.com/labs/mind/AAI7lm0.html
+3  0.685656        b'The 50 best films of the 2010s'  [-0.024614008143544197, 0.013537825085222721, ...   N6007                     The 50 best films of the 2010s  https://assets.msn.com/labs/mind/AAJAYsh.html
+4  0.669703                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...   N4855  This Boston Hotel Ranks As One of the Most Hau...  https://assets.msn.com/labs/mind/AAJhBGb.html
+5  0.669703                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...  N22599              The 20 Most Haunted Hotels in America  https://assets.msn.com/labs/mind/AAI6Iey.html
+6  0.669703                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...   N4912  New Movies and TV Shows You'll Be Able to Cozy...  https://assets.msn.com/labs/mind/AAJdRd0.html
+7  0.669703                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...  N48032  Movie review: Stars reunite for rom-com 'Todos...  https://assets.msn.com/labs/mind/AAGs9hb.html
+8  0.668541     b'50 Best Movie Sequels of All Time'  [-0.03256732225418091, -0.03161001205444336, 0...  N26488                  50 Best Movie Sequels of All Time  https://assets.msn.com/labs/mind/BBWBrdA.html
+```
+Context can be list of previous searchs, or list of article titles read by user.
+
+If you have a system where context is more important than the actual search, there is prioritze_context parameter.
+
+```python
+res = data.search("Best movies", context=["awards"], prioritize_context=True)
+print(res)
+```
+Same search but now the award is the 1st result.
+```python
+      score                                    label                                            feature      id                                              title                                            url
+0  0.707995                            b'Film award'  [-0.015458960086107254, 0.031246623024344444, ...  N20533  Roman Polanski Leads European Film Awards Nomi...  https://assets.msn.com/labs/mind/BBWvQFf.html
+1  0.398799                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...   N4912  New Movies and TV Shows You'll Be Able to Cozy...  https://assets.msn.com/labs/mind/AAJdRd0.html
+2  0.398799                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...  N48032  Movie review: Stars reunite for rom-com 'Todos...  https://assets.msn.com/labs/mind/AAGs9hb.html
+3  0.398799                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...  N62924                   50 Best Movies You've Never Seen  https://assets.msn.com/labs/mind/AAHDxdZ.html
+4  0.398799                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...   N4855  This Boston Hotel Ranks As One of the Most Hau...  https://assets.msn.com/labs/mind/AAJhBGb.html
+5  0.398799                                  b'Film'  [-0.021388016641139984, -0.016169555485248566,...  N22599              The 20 Most Haunted Hotels in America  https://assets.msn.com/labs/mind/AAI6Iey.html
+6  0.203354        b'The 50 best films of the 2010s'  [-0.024614008143544197, 0.013537825085222721, ...   N6007                     The 50 best films of the 2010s  https://assets.msn.com/labs/mind/AAJAYsh.html
+7  0.156346     b'50 Best Movie Sequels of All Time'  [-0.03256732225418091, -0.03161001205444336, 0...  N26488                  50 Best Movie Sequels of All Time  https://assets.msn.com/labs/mind/BBWBrdA.html
+8  0.153158  b'The best football movies of all time'  [0.026803573593497276, -0.048604659736156464, ...  N23005               The best football movies of all time  https://assets.msn.com/labs/mind/AAI7lm0.html
+```
+
+List of all parameters can be find in the `text_data.py`
+Playing with different variables gives better results based on data type.
+
+I will add more details in this demo and more explanation in architecture.
+
+For questions please email me: berkgokden@gmail.com
+
+
