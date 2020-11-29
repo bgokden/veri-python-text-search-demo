@@ -130,6 +130,13 @@ class TextData:
     def item_search(self, item, context, **kwargs):
         vectors = item.get_features()
         context_vectors = context.get_features()
+        positive = kwargs.get('positive', [])
+        negative = kwargs.get('negative', [])
+        filters = []
+        for text in positive:
+            filters.append("..#(text%\"{}\")".format(text))
+        for text in negative:
+            filters.append("..#(text!%\"{}\")".format(text))
         result = self.client.search(vectors,
                                     limit=kwargs.get('limit', self.limit),
                                     group_limit=kwargs.get('group_limit', self.group_limit),
@@ -139,13 +146,16 @@ class TextData:
                                     context_vectors=context_vectors,
                                     prioritize_context=kwargs.get('prioritize_context', self.prioritize_context),
                                     cache_duration=kwargs.get("cache_duration", self.cache_duration),
+                                    filters=filters,
+                                    group_filters=kwargs.get("group_filters", []),
                                     result_limit=kwargs.get('result_limit', self.result_limit))
         results = []
         for r in result:
             group_label_data = json.loads(r.datum.key.groupLabel)
+            label_data = json.loads(r.datum.value.label)
             results.append({
                 'score': r.score,
-                'label': str(r.datum.value.label),
+                'label': label_data['text'],
                 'group_label': group_label_data,
                 'feature': r.datum.key.feature,
             })

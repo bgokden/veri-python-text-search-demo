@@ -153,6 +153,25 @@ Same search but now the award is the 1st result.
 8  0.153158  b'The best football movies of all time'  [0.026803573593497276, -0.048604659736156464, ...  N23005               The best football movies of all time  https://assets.msn.com/labs/mind/AAI7lm0.html
 ```
 
+You can also use filters to add some hard text matching:
+
+```python
+>>> data.search("Best movies", positive=["*Sequels*"])
+      score                               label                                            feature      id                               title                                            url
+0  0.668541   50 Best Movie Sequels of All Time  [-0.03256732225418091, -0.03161001205444336, 0...  N26488   50 Best Movie Sequels of All Time  https://assets.msn.com/labs/mind/BBWBrdA.html
+1  0.550557  50 Worst Movie Sequels of All Time  [-0.023441022261977196, -0.005659815855324268,...  N27936  50 Worst Movie Sequels of All Time  https://assets.msn.com/labs/mind/BBWBrdB.html
+>>> data.search("Best movies", positive=["*Sequels*"], negative=["dfds"])
+      score                               label                                            feature      id                               title                                            url
+0  0.668541   50 Best Movie Sequels of All Time  [-0.03256732225418091, -0.03161001205444336, 0...  N26488   50 Best Movie Sequels of All Time  https://assets.msn.com/labs/mind/BBWBrdA.html
+1  0.550557  50 Worst Movie Sequels of All Time  [-0.023441022261977196, -0.005659815855324268,...  N27936  50 Worst Movie Sequels of All Time  https://assets.msn.com/labs/mind/BBWBrdB.html
+>>> data.search("Best movies", positive=["*Sequels*"], negative=["*Worst*"])
+      score                              label                                            feature      id                              title                                            url
+0  0.668541  50 Best Movie Sequels of All Time  [-0.03256732225418091, -0.03161001205444336, 0...  N26488  50 Best Movie Sequels of All Time  https://assets.msn.com/labs/mind/BBWBrdA.html
+
+```
+Positive is using SQL like and negative is using SQL Not Like matching.
+
+
 List of all parameters can be find in the `text_data.py`
 Playing with different variables gives better results based on data type.
 

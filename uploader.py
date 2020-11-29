@@ -13,7 +13,7 @@ count = 0
 with open(news_json_path) as f:
     for line in f:
         row = json.loads(line)
-        label = row['label'].strip()
+        label = json.dumps({'text': row['label']})
         print(count, label)
         group_label = json.dumps(row['group_label'])
         client.insert(row['feature'], label.encode(), group_label=group_label.encode())
